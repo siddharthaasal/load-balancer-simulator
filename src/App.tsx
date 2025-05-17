@@ -1,19 +1,46 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 import AlgorithmSelector from './components/AlgorithmSelector.tsx';
 import ServerSelector from './components/ServerSelector.tsx';
 import RPSSelector from './components/RPSSelector.tsx';
+import { type Server, type Request } from "./types.ts"
 
 function App() {
 
+  const [servers, setServers] = useState<Server[]>([]);
   const [algorithm, setAlgorithm] = useState("Round Robin");
   const [serverCount, setServerCount] = useState(3);
   const [rps, setRps] = useState(6);
 
+  useEffect(
+    () => {
+      console.log("Re-initializing servers for serverCount = ", serverCount);
+      const newServers: Server[] = Array.from({ length: serverCount }, (_, i) => ({
+        id: i,
+        weight: 1,
+        queue: [],
+        maxCapacity: 3,
+      }));
+      setServers(newServers);
+      console.log(newServers);
+    },
+    [serverCount]
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      generateRequest();
+    }, 1000 / rps);
+
+    return () => clearInterval(interval);
+  }, [rps, servers, algorithm]);
+
   function startSimulation() {
     console.log({ algorithm, serverCount, rps });
   }
+
+
 
   return (
     <>
